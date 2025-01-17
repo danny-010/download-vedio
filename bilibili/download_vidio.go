@@ -44,14 +44,14 @@ func init() {
 }
 
 func main() {
-	fmt.Println(urlPtah, distDir)
 	flag.Parse()
+	fmt.Println(urlPtah, distDir)
 
 	for _, url := range getUrls(urlPtah) {
 		if len(url) < len("http://") {
 			continue
 		}
-		filename := strings.Split(url, "/")
+		filename := strings.Split(url, "=")
 		err := DownloadFile(distDir+"/"+filename[len(filename)-1]+".mp4", strings.TrimSpace(url))
 		if err != nil {
 			fmt.Println("download REEOR: ", err, url)
@@ -67,7 +67,10 @@ func DownloadFile(filepath string, url string) error {
 
 	// Get the data
 	resp, err := http.Get(url)
-	if err != nil {
+	fmt.Println("resp.StatusCode:", resp.StatusCode)
+
+	if resp.StatusCode > 299 || err != nil {
+		fmt.Println("DownloadFile error 1")
 		return err
 	}
 	defer resp.Body.Close()
@@ -75,10 +78,10 @@ func DownloadFile(filepath string, url string) error {
 	// Create the file
 	out, err := os.Create(filepath)
 	if err != nil {
+		fmt.Println("DownloadFile error 2")
 		return err
 	}
 	defer out.Close()
-	fmt.Println(resp.ContentLength)
 
 	// Write the body to file
 	_, err = io.Copy(out, resp.Body)
